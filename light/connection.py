@@ -27,18 +27,23 @@ class Connection:
         self._writer.close()
         await self._writer.wait_closed()
 
-    async def _write_command(self, brightness: float, transition: float):
+    async def _write_command(self, command_id: int, brightness: int, transition: int) -> None:
+        command = pack('BHH', command_id, brightness, transition)
+        self._writer.write(command)
+        await self._writer.drain()
+
+    async def set_state(self, brightness: float, transition: float):
         """
         :param brightness: 0 off, 1 on
         :param transition: seconds
         """
         brightness = round(brightness * 0xFFFF)
         transition = round(transition * 1000)
-        command = pack('BHH', 0, brightness, transition)
-        self._writer.write(command)
-        await self._writer.drain()
+        await self._write_command(0, brightness, transition)
 
-
+    async def request_status(self) -> Status:
+        await self._write_command(1, 0, 0)
+        return await self._read()
 
     async def _read(self) -> Status:
         data = await self._reader.read(32)

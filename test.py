@@ -15,9 +15,9 @@ async def run():
 
 async def write_loop(connection: Connection):
     while True:
-        await connection._write_command(1, 0.5)
+        await connection.set_state(1, 0.5)
         await asyncio.sleep(1)
-        await connection._write_command(0, 0.5)
+        await connection.set_state(0, 0.5)
         await asyncio.sleep(1)
 
 
