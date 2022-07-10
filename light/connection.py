@@ -38,6 +38,8 @@ class Connection:
         self._writer.write(command)
         await self._writer.drain()
 
+
+
     async def _read(self) -> Status:
         data = await self._reader.read(32)
         id_0, id_1, id_2, id_3, id_4, id_5, brightness, gpio_status, uptime = unpack('!BBBBBBHBxxxL', data)
