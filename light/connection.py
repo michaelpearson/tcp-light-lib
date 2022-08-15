@@ -1,5 +1,5 @@
 import asyncio
-from collections import AsyncIterator
+from collections.abc import AsyncIterator
 from struct import pack, unpack
 from typing import NamedTuple
 
