@@ -18,14 +18,16 @@ class Connection:
     _event_loop: Task
     _callback: Callable[[Status], None]
 
-    def __init__(self, connection: (StreamReader, StreamWriter), callback: Callable[[Status], None]):
+    def __init__(self, connection: (StreamReader, StreamWriter)):
         self._reader, self._writer = connection
-        self._callback = callback
         self._event_loop = get_event_loop().create_task(self.__event_loop())
 
     @classmethod
-    async def create(cls, host: str, callback: Callable[[Status], None]) -> 'Connection':
-        return Connection(await open_connection(host, 8889), callback)
+    async def create(cls, host: str) -> 'Connection':
+        return Connection(await open_connection(host, 8889))
+
+    def set_callback(self, callback: Callable[[Status], None]) -> None:
+        self._callback = callback
 
     async def set_state(self, brightness: float, transition: float):
         brightness = round(brightness * 0xFFFF)
@@ -42,7 +44,9 @@ class Connection:
 
     async def __event_loop(self) -> None:
         while True:
-            self._callback(await self.__read())
+            status = await self.__read()
+            if self._callback is not None:
+                self._callback(status)
 
     async def __read(self) -> Status:
         data = await self._reader.read(32)
